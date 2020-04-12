@@ -1,0 +1,8 @@
+1				:number of parts for the forward modeling operator. If the memory cannot support the modeling, change this parameter into e.g., 5, 10, 20, 50, 100...
+112				:Grid size of X
+112				:Grid size of Y
+60				:Grid size of Z
+50				:Length of cell along X in meter
+50				:Length of cell along Y in meter
+50				:Length of cell along Z in meter
+1000			:Number of observed points for the forward modeling
