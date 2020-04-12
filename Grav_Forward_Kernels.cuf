@@ -1,0 +1,384 @@
+!==============Cuda For Module===============
+MODULE mProc_GRAV
+USE cudafor
+INTEGER,PARAMETER :: block=256
+CONTAINS
+
+!================Gx calculation==================== 
+		!==============Calc Rn===============
+Subroutine rn_calc_gx(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G4PAI)
+	real dv,G4PAI
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gx<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G4PAI*dv*rnd
+return
+end Subroutine rn_calc_gx
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gx(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZx(J)-XYobs(I,1))/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gx
+ 		!=====================================
+
+!================Gy calculation==================== 
+		!==============Calc Rn===============
+Subroutine rn_calc_gy(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G4PAI)
+	real dv,G4PAI
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gy<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G4PAI*dv*rnd
+return
+end Subroutine rn_calc_gy
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gy(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZy(J)-XYobs(I,2))/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gy
+ 		!=====================================
+
+!================Gz calculation==================== 
+		!==============Calc Rn===============
+Subroutine rn_calc_gz(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G4PAI)
+	real dv,G4PAI
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gz<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G4PAI*dv*rnd
+return
+end Subroutine rn_calc_gz
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gz(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZz(J)-XYobs(I,3))/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gz
+ 		!=====================================
+
+!================Gzz calculation==================== 
+		!==============Calc Rn===============
+Subroutine rn_calc_gzz(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gzz<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gzz
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gzz(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(3*(XYZz(J)-XYobs(I,3))**2/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)-1)/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gzz
+ 		!=====================================
+
+!================Gzx calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gzx(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gzx<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=3.0*G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gzx
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gzx(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZz(J)-XYobs(I,3))*(XYZx(J)-XYobs(I,1))/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**2.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gzx
+ 		!=====================================
+
+!================Gzy calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gzy(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gzy<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=3.0*G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gzy
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gzy(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZz(J)-XYobs(I,3))*(XYZy(J)-XYobs(I,2))/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**2.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gzy
+ 		!=====================================
+
+!================Gxx calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gxx(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gxx<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gxx
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gxx(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(3*(XYobs(I,1)-XYZx(J))**2/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)-1)/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gxx
+ 		!=====================================
+
+!================Gyy calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gyy(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gyy<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gyy
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gyy(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(3*(XYobs(I,2)-XYZy(J))**2/((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)-1)/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**1.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gyy
+ 		!=====================================
+
+!================Gxy calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gxy(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gxy<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=3.0*G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gxy
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gxy(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*(XYZx(J)-XYobs(I,1))*(XYZy(J)-XYobs(I,2))/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**2.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gxy
+ 		!=====================================
+
+!================Gdelta calculation==================== 
+ 		!==============Calc Rn===============
+Subroutine rn_calc_gdelta(rn,rnd,Ndata,Mcell,dv,rhod,XYobs,XYZx,XYZy,XYZz,G_gradient)
+	real dv,G_gradient
+	integer Ndata,Mcell
+	real rn(Ndata)
+	real(4),device :: XYobs(Ndata,3),rnd(Ndata),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell),rhod(Mcell)
+
+	TYPE(dim3) :: grid
+	grid=dim3((Ndata-1)/block+1,1,1)
+
+	rnd=0.0
+
+	call rn_calcd_gdelta<<<grid,block>>>(rnd,Ndata,Mcell,rhod,XYobs,XYZx,XYZy,XYZz)
+	rn=1.5*G_gradient*dv*rnd
+return
+end Subroutine rn_calc_gdelta
+		!=====================================
+ATTRIBUTES(GLOBAL) Subroutine rn_calcd_gdelta(rn,Ndata,Mcell,rho,XYobs,XYZx,XYZy,XYZz)
+	real,value :: d_cal
+	integer,value :: Ndata,Mcell
+	real(4),device :: rn(Ndata),rho(Mcell)
+	real(4),device :: XYobs(Ndata,3),XYZx(Mcell),XYZy(Mcell),XYZz(Mcell)
+
+	I=threadidx%x+block*(blockidx%x-1)
+	if (I>Ndata) return
+
+    d_cal=0.0
+    do J=1,Mcell
+		d_cal=d_cal+rho(J)*((XYZx(J)-XYobs(I,1))**2-(XYZy(J)-XYobs(I,2))**2)/&
+			  ((XYobs(I,1)-XYZx(J))**2+(XYobs(I,2)-XYZy(J))**2+(XYZz(J)-XYobs(I,3))**2)**2.5
+	end do
+
+	rn(I)=d_cal
+return
+end Subroutine rn_calcd_gdelta
+ 		!=====================================
+
+END MODULE
