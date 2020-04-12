@@ -78,34 +78,34 @@ Program GRAVITY_FORWARD_MODELING
 	rn_gdelta=0.0
 	do in=1,n_div
 		call rn_calc_gx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
 		rn_gx=rn_gx+rn_temp
 		call rn_calc_gy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
 		rn_gy=rn_gy+rn_temp
 		call rn_calc_gz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
 		rn_gz=rn_gz+rn_temp
 		call rn_calc_gzz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gzz=rn_gzz+rn_temp
 		call rn_calc_gzx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gzx=rn_gzx+rn_temp
 		call rn_calc_gzy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gzy=rn_gzy+rn_temp
 		call rn_calc_gxx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gxx=rn_gxx+rn_temp
 		call rn_calc_gyy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gyy=rn_gyy+rn_temp
 		call rn_calc_gzz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gxy=rn_gxy+rn_temp
 		call rn_calc_gdelta(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
-									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+				XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
 		rn_gdelta=rn_gdelta+rn_temp
 	end do
 
@@ -113,8 +113,9 @@ Program GRAVITY_FORWARD_MODELING
 
 	do i=1,Ndata
         write(4,'(E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6)')&
-			  XYobs(i,1),XYobs(i,2),XYobs(i,3),rn_gx(i),rn_gy(i),rn_gz(i),rn_gzz(i),rn_gzx(i),rn_gzy(i),rn_gxx(i),rn_gyy(i),rn_gxy(i),rn_gdelta(i)
-    end do
+			  XYobs(i,1),XYobs(i,2),XYobs(i,3),rn_gx(i),rn_gy(i),rn_gz(i),rn_gzz(i),rn_gzx(i),rn_gzy(i),rn_gxx(i),&
+			  rn_gyy(i),rn_gxy(i),rn_gdelta(i)
+    	end do
 
 	close(4)
 
