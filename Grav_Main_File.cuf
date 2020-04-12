@@ -1,0 +1,138 @@
+Program GRAVITY_FORWARD_MODELING
+
+	USE mProc_GRAV
+	parameter(pi=3.1415926,G4PAI=6.667e-3,G_gradient=6.667e+1)
+
+	integer Ndata,Mcell,nx,ny,nz
+	integer Mdiv,n_div
+	real dv,dx,dy,dz
+	real t1,t2,time
+
+	real, allocatable :: XYobs(:,:),XYZ(:,:),rn_temp(:),rho(:)
+	real, allocatable :: rn_gx(:),rn_gy(:),rn_gz(:),rn_gzz(:),rn_gzx(:),rn_gzy(:),rn_gxx(:),rn_gyy(:),rn_gxy(:),rn_gdelta(:)
+	real(4), allocatable, device :: rn_tempd(:), XYZdx(:), XYZdy(:), XYZdz(:), XYobsd(:,:), rhod(:)
+
+	open(1,file='par.dat') !Input file
+		read(1,*) n_div
+		read(1,*) nx
+		read(1,*) ny
+		read(1,*) nz
+		read(1,*) dx
+		read(1,*) dy
+		read(1,*) dz
+		read(1,*) Ndata
+	close(1)
+
+	Mcell=nx*ny*nz
+	Mdiv=Mcell/n_div
+	dv=dx*dy*dz
+
+	allocate(XYobs(Ndata,3),XYZ(Mcell,3),rn_temp(Ndata),rho(Mcell))
+	allocate(rn_gx(Ndata),rn_gy(Ndata),rn_gz(Ndata),rn_gzz(Ndata))
+	allocate(rn_gzx(Ndata),rn_gzy(Ndata),rn_gxx(Ndata),rn_gyy(Ndata),rn_gxy(Ndata),rn_gdelta(Ndata))
+	allocate(rn_tempd(Ndata), XYZdx(Mcell), XYZdy(Mcell), XYZdz(Mcell), XYobsd(Ndata,3), rhod(Mcell))
+
+	call cpu_time(t1)
+	write(*,*)'Perform Gravity Forward Modeling（Gx/Gy/Gz/Gzz/Gzx/Gzy/Gxx/Gyy/Gdelta）...'
+
+	XYobs=0.0
+
+	open(2,file='XYZobs.dat') !Coordinate of observed points
+	do i=1,Ndata
+		read(2,*)XYobs(i,:)
+	end do
+	close(2)
+	XYobsd(:,:)=XYobs(:,:)
+
+	open(3,file='density.dat') !Density of each cell
+
+	XYZ=0.0
+	rho=0.0
+
+	do k=1,nx
+		do i=1,ny
+			do j=1,nz
+				XYZ((k-1)*ny*nz+(i-1)*nz+j,3)=(j-1)*dz+dz/2
+				XYZ((k-1)*ny*nz+(i-1)*nz+j,2)=(i-1)*dy+dy/2
+				XYZ((k-1)*ny*nz+(i-1)*nz+j,1)=(k-1)*dx+dx/2
+				read(3,*)rho((k-1)*ny*nz+(i-1)*nz+j)  !Order of the coordinate，z--y--x
+			end do
+		end do
+	end do
+	XYZdx=XYZ(:,1)
+	XYZdy=XYZ(:,2)
+	XYZdz=XYZ(:,3)
+	rhod=rho
+	
+	close(3)
+
+	rn_gx=0.0
+	rn_gy=0.0
+	rn_gz=0.0
+	rn_gzz=0.0
+	rn_gzx=0.0
+	rn_gzy=0.0
+	rn_gxx=0.0
+	rn_gyy=0.0
+	rn_gxy=0.0
+	rn_gdelta=0.0
+	do in=1,n_div
+		call rn_calc_gx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+		rn_gx=rn_gx+rn_temp
+		call rn_calc_gy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+		rn_gy=rn_gy+rn_temp
+		call rn_calc_gz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G4PAI)
+		rn_gz=rn_gz+rn_temp
+		call rn_calc_gzz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gzz=rn_gzz+rn_temp
+		call rn_calc_gzx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gzx=rn_gzx+rn_temp
+		call rn_calc_gzy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gzy=rn_gzy+rn_temp
+		call rn_calc_gxx(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gxx=rn_gxx+rn_temp
+		call rn_calc_gyy(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gyy=rn_gyy+rn_temp
+		call rn_calc_gzz(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gxy=rn_gxy+rn_temp
+		call rn_calc_gdelta(rn_temp,rn_tempd,Ndata,Mdiv,dv,rhod((1+(in-1)*Mdiv):in*Mdiv),XYobsd,XYZdx((1+(in-1)*Mdiv):in*Mdiv),&
+									XYZdy((1+(in-1)*Mdiv):in*Mdiv),XYZdz((1+(in-1)*Mdiv):in*Mdiv),G_gradient)
+		rn_gdelta=rn_gdelta+rn_temp
+	end do
+
+	open(4,file='obs.dat') !Output file for the gravity forward modeling results
+
+	do i=1,Ndata
+        write(4,'(E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6,2X,E13.6)')&
+			  XYobs(i,1),XYobs(i,2),XYobs(i,3),rn_gx(i),rn_gy(i),rn_gz(i),rn_gzz(i),rn_gzx(i),rn_gzy(i),rn_gxx(i),rn_gyy(i),rn_gxy(i),rn_gdelta(i)
+    end do
+
+	close(4)
+
+	open(5,file='synthetic_model.dat') !Same as the input density file (with coordinate)
+	do i=1,Mcell
+		write(5,*) XYZ(i,1),XYZ(i,2),XYZ(i,3),rho(i)
+	end do
+	close(5)
+
+	call cpu_time(t2)
+	time=t2-t1
+	write(*,*)
+	write(*,*)'Total Computing Time =',time,'s'
+
+	deallocate(XYobs,XYZ,rn_temp,rho)
+	deallocate(rn_gx,rn_gy,rn_gz,rn_gzz,rn_gzx,rn_gzy,rn_gxx,rn_gyy,rn_gxy,rn_gdelta)
+	deallocate(rn_tempd, XYZdx, XYZdy, XYZdz, XYobsd, rhod)
+
+pause
+stop
+end
